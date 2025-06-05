@@ -332,6 +332,8 @@ export class MysaApiClient {
    * @param deviceId - The ID of the device to stop receiving real-time updates for.
    */
   async stopRealtimeUpdates(deviceId: string) {
+    this._logger.info(`Stopping realtime updates for device '${deviceId}'`);
+
     const timer = this._realtimeDeviceIds.get(deviceId);
     if (!timer) {
       this._logger.warn(`No real-time updates are running for device '${deviceId}'`);
@@ -358,18 +360,18 @@ export class MysaApiClient {
       this._cognitoUserSession.isValid() &&
       dayjs.unix(this._cognitoUserSession.getIdToken().getExpiration()).isAfter()
     ) {
-      this._logger.info('Session is valid, no need to refresh');
+      this._logger.debug('Session is valid, no need to refresh');
       return Promise.resolve(this._cognitoUserSession);
     }
 
-    this._logger.info('Session is not valid or expired, refreshing...');
+    this._logger.debug('Session is not valid or expired, refreshing...');
     return new Promise<CognitoUserSession>((resolve, reject) => {
       this._cognitoUser!.refreshSession(this._cognitoUserSession!.getRefreshToken(), (error, session) => {
         if (error) {
           this._logger.error('Failed to refresh session:', error);
           reject(new UnauthenticatedError('Unable to refresh the authentication session.'));
         } else {
-          this._logger.info('Session refreshed successfully');
+          this._logger.debug('Session refreshed successfully');
           this._cognitoUserSession = session;
           this.emitter.emit('sessionChanged', this.session);
           resolve(session);
