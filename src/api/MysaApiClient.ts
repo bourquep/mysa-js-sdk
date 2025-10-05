@@ -595,8 +595,10 @@ export class MysaApiClient {
       this._logger.info(`MQTT resume returnCode=${returnCode} sessionPresent=${sessionPresent}`)
     );
     connection.on('error', (e) => this._logger.error('MQTT error', e));
+
     connection.on('closed', () => {
       this._logger.info('MQTT connection closed');
+      this._mqttConnectionPromise = undefined;
     });
 
     await connection.connect();
