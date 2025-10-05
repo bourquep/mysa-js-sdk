@@ -544,7 +544,13 @@ export class MysaApiClient {
    * @throws {@link Error} When connection establishment fails.
    */
   private getMqttConnection(): Promise<mqtt.MqttClientConnection> {
-    this._mqttConnectionPromise ??= this.createMqttConnection();
+    if (!this._mqttConnectionPromise) {
+      this._mqttConnectionPromise = this.createMqttConnection().catch((err) => {
+        this._mqttConnectionPromise = undefined;
+        throw err;
+      });
+    }
+
     return this._mqttConnectionPromise;
   }
 
