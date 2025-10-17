@@ -25,7 +25,7 @@ import { MysaApiError, UnauthenticatedError } from './Errors';
 import { Logger, VoidLogger } from './Logger';
 import { MysaApiClientEventTypes } from './MysaApiClientEventTypes';
 import { MysaApiClientOptions } from './MysaApiClientOptions';
-import { MysaDeviceMode } from './MysaDeviceMode';
+import { MysaDeviceMode, MysaFanSpeedMode } from './MysaDeviceMode';
 
 dayjs.extend(duration);
 
@@ -349,15 +349,20 @@ export class MysaApiClient {
    *
    * // Set temperature and mode
    * await client.setDeviceState('device123', 20, 'heat');
+   *
+   * // Set fan speed
+   * await client.setDeviceState('device123', undefined, undefined, 'auto');
    * ```
    *
    * @param deviceId - The ID of the device to control.
    * @param setPoint - The target temperature set point (optional).
    * @param mode - The operating mode to set ('off', 'heat', or undefined to leave unchanged).
+   * @param fanSpeed - The fan speed mode to set ('low', 'medium', 'high', 'max', 'auto', or undefined to leave
+   *   unchanged).
    * @throws {@link UnauthenticatedError} When the user is not authenticated.
    * @throws {@link Error} When MQTT connection or command sending fails.
    */
-  async setDeviceState(deviceId: string, setPoint?: number, mode?: MysaDeviceMode) {
+  async setDeviceState(deviceId: string, setPoint?: number, mode?: MysaDeviceMode, fanSpeed?: MysaFanSpeedMode) {
     this._logger.debug(`Setting device state for '${deviceId}'`);
 
     if (!this._cachedDevices) {
@@ -390,16 +395,43 @@ export class MysaApiClient {
         ver: 1,
         type: device.Model.startsWith('BB-V1')
           ? 1
-          : device.Model.startsWith('BB-V2')
-            ? device.Model.endsWith('-L')
-              ? 5
-              : 4
-            : 0,
+          : device.Model.startsWith('AC-V1')
+            ? 2
+            : device.Model.startsWith('BB-V2')
+              ? device.Model.endsWith('-L')
+                ? 5
+                : 4
+              : 0,
         cmd: [
           {
             tm: -1,
             sp: setPoint,
-            md: mode === 'off' ? 1 : mode === 'heat' ? 3 : undefined
+            md:
+              mode === 'off'
+                ? 1
+                : mode === 'auto'
+                  ? 2
+                  : mode === 'heat'
+                    ? 3
+                    : mode === 'cool'
+                      ? 4
+                      : mode === 'fan_only'
+                        ? 5
+                        : mode === 'dry'
+                          ? 6
+                          : void 0,
+            fn:
+              fanSpeed === 'auto'
+                ? 1
+                : fanSpeed === 'low'
+                  ? 3
+                  : fanSpeed === 'medium'
+                    ? 5
+                    : fanSpeed === 'high'
+                      ? 7
+                      : fanSpeed === 'max'
+                        ? 8
+                        : void 0
           }
         ]
       }
@@ -656,8 +688,35 @@ export class MysaApiClient {
           case OutMessageType.DEVICE_STATE_CHANGE:
             this.emitter.emit('stateChanged', {
               deviceId: parsedPayload.src.ref,
-              mode: parsedPayload.body.state.md === 1 ? 'off' : parsedPayload.body.state.md === 3 ? 'heat' : undefined,
-              setPoint: parsedPayload.body.state.sp
+              mode:
+                parsedPayload.body.state.md === 1
+                  ? 'off'
+                  : parsedPayload.body.state.md === 2
+                    ? 'auto'
+                    : parsedPayload.body.state.md === 3
+                      ? 'heat'
+                      : parsedPayload.body.state.md === 4
+                        ? 'cool'
+                        : parsedPayload.body.state.md === 5
+                          ? 'fan_only'
+                          : parsedPayload.body.state.md === 6
+                            ? 'dry'
+                            : void 0,
+              setPoint: parsedPayload.body.state.sp,
+              fanSpeed:
+                parsedPayload.body.state.fn === undefined
+                  ? undefined
+                  : parsedPayload.body.state.fn === 1
+                    ? 'auto'
+                    : parsedPayload.body.state.fn === 3
+                      ? 'low'
+                      : parsedPayload.body.state.fn === 5
+                        ? 'medium'
+                        : parsedPayload.body.state.fn === 7
+                          ? 'high'
+                          : parsedPayload.body.state.fn === 8
+                            ? 'max'
+                            : undefined
             });
             break;
         }

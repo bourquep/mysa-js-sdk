@@ -29,6 +29,8 @@ export interface DeviceStateChange extends MsgPayload<OutMessageType.DEVICE_STAT
       md: number;
       /** Temperature setpoint */
       sp: number;
+      /** Optional fan speed (1 = auto, 3 = low, 5 = medium, 7 = high, 8 = max). AC only */
+      fn?: number;
     };
     /** Success indicator for the state change operation (1 = success, 0 = failure) */
     success: number;
