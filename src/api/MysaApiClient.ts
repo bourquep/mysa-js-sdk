@@ -664,7 +664,7 @@ export class MysaApiClient {
             });
             break;
 
-          case OutMessageType.DEVICE_STATE_CHANGE:
+          case OutMessageType.DEVICE_STATE_CHANGE: {
             const modeMap: Record<number, MysaDeviceMode> = {
               1: 'off',
               2: 'auto',
@@ -688,6 +688,7 @@ export class MysaApiClient {
               fanSpeed: parsedPayload.body.state.fn !== undefined ? fanSpeedMap[parsedPayload.body.state.fn] : undefined
             });
             break;
+          }
         }
       }
     } catch (error) {
