@@ -414,10 +414,7 @@ export class MysaApiClient {
     });
 
     try {
-      await this._publishWithRetry(mqttConnection, `/v1/dev/${deviceId}/in`, payload, mqtt.QoS.AtLeastOnce, {
-        maxAttempts: 5,
-        baseDelayMs: 400
-      });
+      await this._publishWithRetry(mqttConnection, `/v1/dev/${deviceId}/in`, payload, mqtt.QoS.AtLeastOnce);
       this._logger.debug(`Device state publish succeeded for '${deviceId}'`);
     } catch (err) {
       const attempts = (err as MqttPublishError | { attempts?: number })?.attempts ?? 5;
