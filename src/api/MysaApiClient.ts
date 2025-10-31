@@ -386,7 +386,7 @@ export class MysaApiClient {
       time: now.unix(),
       ver: '1.0',
       src: {
-        ref: this.session!.username,
+        ref: this.session?.username ?? '',
         type: 100
       },
       dest: {
@@ -692,7 +692,7 @@ export class MysaApiClient {
     const credentials = await credentialsProvider();
 
     // Stable client id + persistent session to retain QoS1 queue & subscriptions across reconnects.
-    const stableClientId = `mysa-js-sdk-${this.session!.username}`;
+    const stableClientId = `mysa-js-sdk-${this.session?.username ?? ''}`;
 
     const builder = iot.AwsIotMqttConnectionConfigBuilder.new_with_websockets()
       .with_credentials(AwsRegion, credentials.accessKeyId, credentials.secretAccessKey, credentials.sessionToken)
