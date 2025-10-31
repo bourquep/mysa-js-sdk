@@ -589,7 +589,6 @@ export class MysaApiClient {
 
     const transientMarkers = [
       'AWS_ERROR_MQTT_TIMEOUT',
-      'AWS_ERROR_MQTT_CANCELLED_FOR_CLEAN_SESSION',
       'AWS_ERROR_MQTT_NO_CONNECTION',
       'Time limit between request and response',
       'timeout'
