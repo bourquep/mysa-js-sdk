@@ -405,7 +405,12 @@ export class MysaApiClient {
       }
     });
 
-    await mqttConnection.publish(`/v1/dev/${deviceId}/in`, payload, mqtt.QoS.AtLeastOnce);
+    try {
+      await mqttConnection.publish(`/v1/dev/${deviceId}/in`, payload, mqtt.QoS.AtLeastOnce);
+    } catch (error) {
+      this._logger.error(`Failed to publish device state change for '${deviceId}':`, error);
+      throw error;
+    }
   }
 
   /**
@@ -452,7 +457,13 @@ export class MysaApiClient {
       Timestamp: dayjs().unix(),
       Timeout: RealtimeKeepAliveInterval.asSeconds()
     });
-    await mqttConnection.publish(`/v1/dev/${deviceId}/in`, payload, mqtt.QoS.AtLeastOnce);
+    
+    try {
+      await mqttConnection.publish(`/v1/dev/${deviceId}/in`, payload, mqtt.QoS.AtLeastOnce);
+    } catch (error) {
+      this._logger.error(`Failed to publish initial device status request for '${deviceId}':`, error);
+      throw error;
+    }
 
     const timer = setInterval(async () => {
       this._logger.debug(`Sending request to keep-alive publishing device status for '${deviceId}'...`);
@@ -462,7 +473,13 @@ export class MysaApiClient {
         Timestamp: dayjs().unix(),
         Timeout: RealtimeKeepAliveInterval.asSeconds()
       });
-      await mqttConnection.publish(`/v1/dev/${deviceId}/in`, payload, mqtt.QoS.AtLeastOnce);
+      
+      try {
+        const connection = await this.getMqttConnection();
+        await connection.publish(`/v1/dev/${deviceId}/in`, payload, mqtt.QoS.AtLeastOnce);
+      } catch (error) {
+        this._logger.error(`Failed to publish keep-alive for device '${deviceId}':`, error);
+      }
     }, RealtimeKeepAliveInterval.subtract(10, 'seconds').asMilliseconds());
 
     this._realtimeDeviceIds.set(deviceId, timer);
@@ -590,7 +607,10 @@ export class MysaApiClient {
     connection.on('connect', () => this._logger.debug('MQTT connect'));
     connection.on('connection_success', () => this._logger.debug('MQTT connection_success'));
     connection.on('connection_failure', (e) => this._logger.error('MQTT connection_failure', e));
-    connection.on('interrupt', (e) => this._logger.warn('MQTT interrupt', e));
+    connection.on('interrupt', (e) => {
+      this._logger.warn('MQTT interrupt', e);
+      this._mqttConnectionPromise = undefined;
+    });
     connection.on('resume', (returnCode, sessionPresent) =>
       this._logger.info(`MQTT resume returnCode=${returnCode} sessionPresent=${sessionPresent}`)
     );
