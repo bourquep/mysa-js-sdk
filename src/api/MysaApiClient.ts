@@ -658,7 +658,10 @@ export class MysaApiClient {
           }
         }
 
-        const delay = baseDelayMs * Math.pow(2, attempt - 1) * (0.75 + Math.random() * 0.5);
+        // Apply jitter: delay is randomized between 75% and 125% of the base exponential backoff
+        const JITTER_MIN_FACTOR = 0.75;
+        const JITTER_RANGE = 0.5;
+        const delay = baseDelayMs * Math.pow(2, attempt - 1) * (JITTER_MIN_FACTOR + Math.random() * JITTER_RANGE);
 
         this._logger.warn(
           `Transient MQTT publish error on '${topic}' (attempt ${attempt}/${maxAttempts}). Retrying in ${Math.round(
