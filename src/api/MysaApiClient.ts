@@ -356,7 +356,7 @@ export class MysaApiClient {
    *
    * @param deviceId - The ID of the device to control.
    * @param setPoint - The target temperature set point (optional).
-   * @param mode - The operating mode to set ('off', 'heat', or undefined to leave unchanged).
+   * @param mode - The operating mode to set (one of MysaDeviceMode values, or undefined to leave unchanged).
    * @param fanSpeed - The fan speed mode to set ('low', 'medium', 'high', 'max', 'auto', or undefined to leave
    *   unchanged).
    * @throws {@link UnauthenticatedError} When the user is not authenticated.
@@ -377,6 +377,9 @@ export class MysaApiClient {
     const now = dayjs();
 
     this._logger.debug(`Sending request to set device state for '${deviceId}'...`);
+    const modeMap = { off: 1, auto: 2, heat: 3, cool: 4, fan_only: 5, dry: 6 };
+    const fanSpeedMap = { auto: 1, low: 3, medium: 5, high: 7, max: 8 };
+
     const payload = serializeMqttPayload<ChangeDeviceState>({
       msg: InMessageType.CHANGE_DEVICE_STATE,
       id: now.valueOf(),
@@ -406,32 +409,8 @@ export class MysaApiClient {
           {
             tm: -1,
             sp: setPoint,
-            md:
-              mode === 'off'
-                ? 1
-                : mode === 'auto'
-                  ? 2
-                  : mode === 'heat'
-                    ? 3
-                    : mode === 'cool'
-                      ? 4
-                      : mode === 'fan_only'
-                        ? 5
-                        : mode === 'dry'
-                          ? 6
-                          : void 0,
-            fn:
-              fanSpeed === 'auto'
-                ? 1
-                : fanSpeed === 'low'
-                  ? 3
-                  : fanSpeed === 'medium'
-                    ? 5
-                    : fanSpeed === 'high'
-                      ? 7
-                      : fanSpeed === 'max'
-                        ? 8
-                        : void 0
+            md: mode ? modeMap[mode] : undefined,
+            fn: fanSpeed ? fanSpeedMap[fanSpeed] : undefined,
           }
         ]
       }
@@ -686,37 +665,14 @@ export class MysaApiClient {
             break;
 
           case OutMessageType.DEVICE_STATE_CHANGE:
+            const modeMap: Record<number, MysaDeviceMode> = { 1: 'off', 2: 'auto', 3: 'heat', 4: 'cool', 5: 'fan_only', 6: 'dry' };
+            const fanSpeedMap: Record<number, MysaFanSpeedMode> = { 1: 'auto', 3: 'low', 5: 'medium', 7: 'high', 8: 'max' };
+
             this.emitter.emit('stateChanged', {
               deviceId: parsedPayload.src.ref,
-              mode:
-                parsedPayload.body.state.md === 1
-                  ? 'off'
-                  : parsedPayload.body.state.md === 2
-                    ? 'auto'
-                    : parsedPayload.body.state.md === 3
-                      ? 'heat'
-                      : parsedPayload.body.state.md === 4
-                        ? 'cool'
-                        : parsedPayload.body.state.md === 5
-                          ? 'fan_only'
-                          : parsedPayload.body.state.md === 6
-                            ? 'dry'
-                            : void 0,
+              mode: parsedPayload.body.state.md ? modeMap[parsedPayload.body.state.md] : undefined,
               setPoint: parsedPayload.body.state.sp,
-              fanSpeed:
-                parsedPayload.body.state.fn === undefined
-                  ? undefined
-                  : parsedPayload.body.state.fn === 1
-                    ? 'auto'
-                    : parsedPayload.body.state.fn === 3
-                      ? 'low'
-                      : parsedPayload.body.state.fn === 5
-                        ? 'medium'
-                        : parsedPayload.body.state.fn === 7
-                          ? 'high'
-                          : parsedPayload.body.state.fn === 8
-                            ? 'max'
-                            : undefined
+              fanSpeed: parsedPayload.body.state.fn !== undefined ? fanSpeedMap[parsedPayload.body.state.fn] : undefined,
             });
             break;
         }
