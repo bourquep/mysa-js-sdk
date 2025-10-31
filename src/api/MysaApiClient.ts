@@ -417,14 +417,15 @@ export class MysaApiClient {
       await this._publishWithRetry(mqttConnection, `/v1/dev/${deviceId}/in`, payload, mqtt.QoS.AtLeastOnce);
       this._logger.debug(`Device state publish succeeded for '${deviceId}'`);
     } catch (err) {
-      const attempts = (err as MqttPublishError | { attempts?: number })?.attempts ?? 5;
+      if (err instanceof MqttPublishError) {
+        throw err;
+      }
+
+      const attempts = (err as { attempts?: number })?.attempts ?? 1;
       const message =
         err instanceof Error ? err.message : typeof err === 'string' ? err : 'Unknown MQTT publish failure';
-      throw new MqttPublishError(
-        `Failed to set device state for '${deviceId}' after ${attempts} attempts: ${message}`,
-        attempts,
-        err
-      );
+
+      throw new MqttPublishError(`Failed to set device state for '${deviceId}': ${message}`, attempts, err);
     }
   }
 
