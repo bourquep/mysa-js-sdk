@@ -475,9 +475,12 @@ export class MysaApiClient {
       });
       
       try {
+        // Fetch a fresh connection in case the original was interrupted
         const connection = await this.getMqttConnection();
         await connection.publish(`/v1/dev/${deviceId}/in`, payload, mqtt.QoS.AtLeastOnce);
       } catch (error) {
+        // Keep-alive errors are logged but not re-thrown to avoid disrupting the interval.
+        // The connection will be automatically recreated on the next iteration if needed.
         this._logger.error(`Failed to publish keep-alive for device '${deviceId}':`, error);
       }
     }, RealtimeKeepAliveInterval.subtract(10, 'seconds').asMilliseconds());
