@@ -416,16 +416,9 @@ export class MysaApiClient {
     try {
       await this._publishWithRetry(mqttConnection, `/v1/dev/${deviceId}/in`, payload, mqtt.QoS.AtLeastOnce);
       this._logger.debug(`Device state publish succeeded for '${deviceId}'`);
-    } catch (err) {
-      if (err instanceof MqttPublishError) {
-        throw err;
-      }
-
-      const attempts = (err as { attempts?: number })?.attempts ?? 1;
-      const message =
-        err instanceof Error ? err.message : typeof err === 'string' ? err : 'Unknown MQTT publish failure';
-
-      throw new MqttPublishError(`Failed to set device state for '${deviceId}': ${message}`, attempts, err);
+    } catch (error) {
+      this._logger.error(`Failed to set device state for '${deviceId}'`, error);
+      throw error;
     }
   }
 
@@ -649,13 +642,7 @@ export class MysaApiClient {
         const isTransient = this._isTransientMqttError(err);
 
         if (!isTransient || attempt >= maxAttempts) {
-          (err as MqttPublishError | { attempts?: number }).attempts = attempt;
-
-          if (isTransient) {
-            throw new MqttPublishError(`Transient MQTT publish failed after ${attempt} attempts`, attempt, err);
-          } else {
-            throw err;
-          }
+          throw new MqttPublishError(`MQTT publish failed after ${attempt} attempts`, attempt, err);
         }
 
         // Apply jitter: delay is randomized between 75% and 125% of the base exponential backoff
