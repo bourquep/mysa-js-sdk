@@ -410,7 +410,7 @@ export class MysaApiClient {
             tm: -1,
             sp: setPoint,
             md: mode ? modeMap[mode] : undefined,
-            fn: fanSpeed ? fanSpeedMap[fanSpeed] : undefined,
+            fn: fanSpeed ? fanSpeedMap[fanSpeed] : undefined
           }
         ]
       }
@@ -665,14 +665,27 @@ export class MysaApiClient {
             break;
 
           case OutMessageType.DEVICE_STATE_CHANGE:
-            const modeMap: Record<number, MysaDeviceMode> = { 1: 'off', 2: 'auto', 3: 'heat', 4: 'cool', 5: 'fan_only', 6: 'dry' };
-            const fanSpeedMap: Record<number, MysaFanSpeedMode> = { 1: 'auto', 3: 'low', 5: 'medium', 7: 'high', 8: 'max' };
+            const modeMap: Record<number, MysaDeviceMode> = {
+              1: 'off',
+              2: 'auto',
+              3: 'heat',
+              4: 'cool',
+              5: 'fan_only',
+              6: 'dry'
+            };
+            const fanSpeedMap: Record<number, MysaFanSpeedMode> = {
+              1: 'auto',
+              3: 'low',
+              5: 'medium',
+              7: 'high',
+              8: 'max'
+            };
 
             this.emitter.emit('stateChanged', {
               deviceId: parsedPayload.src.ref,
               mode: parsedPayload.body.state.md ? modeMap[parsedPayload.body.state.md] : undefined,
               setPoint: parsedPayload.body.state.sp,
-              fanSpeed: parsedPayload.body.state.fn !== undefined ? fanSpeedMap[parsedPayload.body.state.fn] : undefined,
+              fanSpeed: parsedPayload.body.state.fn !== undefined ? fanSpeedMap[parsedPayload.body.state.fn] : undefined
             });
             break;
         }
