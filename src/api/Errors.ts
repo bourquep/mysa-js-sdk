@@ -33,23 +33,6 @@ export class MysaApiError extends Error {
   }
 }
 
-/** Error representing a transient MQTT issue (network interruption, timeout, etc.). */
-export class MqttTransientError extends Error {
-  /**
-   * Creates a new MqttTransientError instance.
-   *
-   * @param message - A human-readable description of the transient failure.
-   * @param original - The original error object thrown by the underlying MQTT library (optional).
-   */
-  constructor(
-    message: string,
-    public original?: unknown
-  ) {
-    super(message);
-    this.name = 'MqttTransientError';
-  }
-}
-
 /** Error thrown when an MQTT publish ultimately fails after retry attempts. */
 export class MqttPublishError extends Error {
   /**
