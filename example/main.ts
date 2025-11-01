@@ -65,7 +65,8 @@ async function main() {
     client.emitter.on('statusChanged', (status) => {
       try {
         const device = devices.DevicesObj[status.deviceId];
-        const watts = status.current !== undefined ? status.current * device.Voltage : undefined;
+        const watts =
+          status.current !== undefined && device.Voltage !== undefined ? status.current * device.Voltage : undefined;
         rootLogger.info(
           `[${status.deviceId}] '${device.Name}' status changed: ${status.temperature}°C, ${status.humidity}%, ${watts ?? 'na'}W`
         );
