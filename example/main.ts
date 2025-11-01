@@ -68,7 +68,7 @@ async function main() {
         const watts =
           status.current !== undefined && device.Voltage !== undefined ? status.current * device.Voltage : undefined;
         rootLogger.info(
-          `[${status.deviceId}] '${device.Name}' status changed: ${status.temperature}°C, ${status.humidity}%, ${watts ?? 'na'}W`
+          `[${status.deviceId}] '${device.Name ?? 'Unknown'}' status changed: ${status.temperature}°C, ${status.humidity}%, ${watts ?? 'na'}W`
         );
       } catch (error) {
         rootLogger.error(error, `Error processing status update for device '${status.deviceId}'`);
@@ -78,7 +78,9 @@ async function main() {
     client.emitter.on('setPointChanged', (change) => {
       try {
         const device = devices.DevicesObj[change.deviceId];
-        rootLogger.info(`'${device.Name}' setpoint changed from ${change.previousSetPoint} to ${change.newSetPoint}`);
+        rootLogger.info(
+          `'${device.Name ?? 'Unknown'}' setpoint changed from ${change.previousSetPoint} to ${change.newSetPoint}`
+        );
       } catch (error) {
         rootLogger.error(error, `Error processing setpoint update for device '${change.deviceId}'`);
       }
@@ -87,7 +89,7 @@ async function main() {
     client.emitter.on('stateChanged', (change) => {
       try {
         const device = devices.DevicesObj[change.deviceId];
-        rootLogger.info(change, `'${device.Name}' state changed.`);
+        rootLogger.info(change, `'${device.Name ?? 'Unknown'}' state changed.`);
       } catch (error) {
         rootLogger.error(error, `Error processing state update for device '${change.deviceId}'`);
       }
@@ -97,7 +99,7 @@ async function main() {
   await Promise.all(
     Object.entries(devices.DevicesObj).map(async ([deviceId, device]) => {
       const serial = await client.getDeviceSerialNumber(deviceId);
-      rootLogger.info(`Serial number for device '${deviceId}' (${device.Name}): ${serial}`);
+      rootLogger.info(`Serial number for device '${deviceId}' (${device.Name ?? 'Unknown'}): ${serial}`);
 
       await client.startRealtimeUpdates(deviceId);
     })
