@@ -86,6 +86,9 @@ export class MysaApiClient {
   /** A promise that resolves to the MQTT connection used for real-time updates. */
   private _mqttConnectionPromise?: Promise<mqtt.MqttClientConnection>;
 
+  /** Stable per-process MQTT client id (prevents collisions between multiple processes). */
+  private _mqttClientId?: string;
+
   /** The device IDs that are currently being updated in real-time, mapped to their respective timeouts. */
   private _realtimeDeviceIds: Map<string, NodeJS.Timeout> = new Map();
 
@@ -173,6 +176,8 @@ export class MysaApiClient {
   async login(emailAddress: string, password: string): Promise<void> {
     this._cognitoUser = undefined;
     this._cognitoUserSession = undefined;
+    this._mqttClientId = undefined;
+
     this.emitter.emit('sessionChanged', this.session);
 
     return new Promise((resolve, reject) => {
@@ -601,6 +606,8 @@ export class MysaApiClient {
     const transientMarkers = [
       'AWS_ERROR_MQTT_TIMEOUT',
       'AWS_ERROR_MQTT_NO_CONNECTION',
+      'AWS_ERROR_MQTT_UNEXPECTED_HANGUP',
+      'UNEXPECTED_HANGUP',
       'Time limit between request and response',
       'timeout'
     ];
@@ -691,8 +698,13 @@ export class MysaApiClient {
     });
     const credentials = await credentialsProvider();
 
-    // Stable client id + persistent session to retain QoS1 queue & subscriptions across reconnects.
-    const stableClientId = `mysa-js-sdk-${this.session?.username ?? ''}`;
+    // Per-process stable client id. Random suffix avoids collisions with other running processes.
+    if (!this._mqttClientId) {
+      const rand = Math.random().toString(36).slice(2, 10);
+      this._mqttClientId = `mysa-js-sdk-${this.session?.username ?? 'anon'}-${rand}`;
+    }
+
+    const stableClientId = this._mqttClientId;
 
     const builder = iot.AwsIotMqttConnectionConfigBuilder.new_with_websockets()
       .with_credentials(AwsRegion, credentials.accessKeyId, credentials.secretAccessKey, credentials.sessionToken)
