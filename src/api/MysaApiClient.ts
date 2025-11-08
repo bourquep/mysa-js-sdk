@@ -763,6 +763,7 @@ export class MysaApiClient {
 
           if (this._mqttConnectionPromise) {
             this._logger.warn('MQTT connection promise still defined after disconnect; expected it to be cleared.');
+            this._mqttConnectionPromise = undefined;
           }
         } catch (error) {
           this._logger.error('Failed to disconnect MQTT connection', error);
