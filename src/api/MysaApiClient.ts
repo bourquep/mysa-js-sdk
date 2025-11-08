@@ -752,12 +752,15 @@ export class MysaApiClient {
         // Force new client id to escape collision; close current connection
         this._mqttClientId = undefined;
 
-        // Clear interrupts and reset connection promise
+        // Clear interrupts
         this._mqttInterrupts = [];
-        this._mqttConnectionPromise = undefined;
 
         try {
           await connection.disconnect();
+
+          if (this._mqttConnectionPromise) {
+            this._logger.warn('Expected MQTT connection to be closed after disconnection.');
+          }
         } catch (error) {
           this._logger.error('Failed to disconnect MQTT connection', error);
         }
