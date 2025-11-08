@@ -747,7 +747,7 @@ export class MysaApiClient {
       this._mqttInterrupts = this._mqttInterrupts.filter((t) => now - t < 60000);
       this._mqttInterrupts.push(now);
 
-      if (this._mqttInterrupts.length >= 5) {
+      if (this._mqttInterrupts.length > 5) {
         this._logger.warn(
           `High interrupt rate (${this._mqttInterrupts.length}/60s). Possible clientId collision. Regenerating clientId and resetting connection...`
         );
