@@ -89,6 +89,9 @@ export class MysaApiClient {
   /** Stable per-process MQTT client id (prevents collisions between multiple processes). */
   private _mqttClientId?: string;
 
+  /** Interrupt timestamps for storm / collision detection. */
+  private _mqttInterrupts: number[] = [];
+
   /** The device IDs that are currently being updated in real-time, mapped to their respective timeouts. */
   private _realtimeDeviceIds: Map<string, NodeJS.Timeout> = new Map();
 
@@ -733,8 +736,34 @@ export class MysaApiClient {
       this._logger.error('MQTT connection_failure', e);
     });
 
-    connection.on('interrupt', (e) => {
+    connection.on('interrupt', async (e) => {
       this._logger.warn('MQTT interrupt', e);
+
+      // Track recent interrupts
+      const now = Date.now();
+      this._mqttInterrupts.push(now);
+
+      // Keep only last 60s
+      this._mqttInterrupts = this._mqttInterrupts.filter((t) => now - t < 60000);
+
+      if (this._mqttInterrupts.length >= 5) {
+        this._logger.warn(
+          `High interrupt rate (${this._mqttInterrupts.length}/60s). Possible clientId collision. Regenerating clientId and resetting connection...`
+        );
+
+        // Force new client id to escape collision; close current connection
+        this._mqttClientId = undefined;
+
+        // Clear interrupts and reset connection promise
+        this._mqttInterrupts = [];
+        this._mqttConnectionPromise = undefined;
+
+        try {
+          await connection.disconnect();
+        } catch (error) {
+          this._logger.error('Failed to disconnect MQTT connection', error);
+        }
+      }
     });
 
     connection.on('resume', async (returnCode, sessionPresent) => {
