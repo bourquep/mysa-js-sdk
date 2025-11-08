@@ -21,6 +21,7 @@ import {
 import { iot, mqtt } from 'aws-iot-device-sdk-v2';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration.js';
+import { customAlphabet } from 'nanoid';
 import { MqttPublishError, MysaApiError, UnauthenticatedError } from './Errors';
 import { Logger, VoidLogger } from './Logger';
 import { MysaApiClientEventTypes } from './MysaApiClientEventTypes';
@@ -28,6 +29,8 @@ import { MysaApiClientOptions } from './MysaApiClientOptions';
 import { MysaDeviceMode, MysaFanSpeedMode } from './MysaDeviceMode';
 
 dayjs.extend(duration);
+
+const getRandomClientId = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 8);
 
 /** Options for MQTT publish operations. */
 export interface MqttPublishOptions {
@@ -704,8 +707,7 @@ export class MysaApiClient {
 
     // Per-process stable client id. Random suffix avoids collisions with other running processes.
     if (!this._mqttClientId) {
-      const rand = Math.random().toString(36).slice(2, 10);
-      this._mqttClientId = `mysa-js-sdk-${this.session?.username ?? 'anon'}-${rand}`;
+      this._mqttClientId = `mysa-js-sdk-${this.session?.username ?? 'anon'}-${getRandomClientId()}`;
     }
 
     const builder = iot.AwsIotMqttConnectionConfigBuilder.new_with_websockets()
