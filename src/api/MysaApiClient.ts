@@ -707,12 +707,10 @@ export class MysaApiClient {
       this._mqttClientId = `mysa-js-sdk-${this.session?.username ?? 'anon'}-${rand}`;
     }
 
-    const stableClientId = this._mqttClientId;
-
     const builder = iot.AwsIotMqttConnectionConfigBuilder.new_with_websockets()
       .with_credentials(AwsRegion, credentials.accessKeyId, credentials.secretAccessKey, credentials.sessionToken)
       .with_endpoint(MqttEndpoint)
-      .with_client_id(stableClientId)
+      .with_client_id(this._mqttClientId)
       .with_clean_session(false)
       .with_keep_alive_seconds(30)
       .with_ping_timeout_ms(3000)
