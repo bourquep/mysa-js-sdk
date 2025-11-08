@@ -739,10 +739,10 @@ export class MysaApiClient {
 
       // Track recent interrupts
       const now = Date.now();
-      this._mqttInterrupts.push(now);
 
       // Keep only last 60s
       this._mqttInterrupts = this._mqttInterrupts.filter((t) => now - t < 60000);
+      this._mqttInterrupts.push(now);
 
       if (this._mqttInterrupts.length >= 5) {
         this._logger.warn(
