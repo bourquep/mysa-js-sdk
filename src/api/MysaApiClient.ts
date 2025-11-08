@@ -180,6 +180,7 @@ export class MysaApiClient {
     this._cognitoUser = undefined;
     this._cognitoUserSession = undefined;
     this._mqttClientId = undefined;
+    this._mqttInterrupts = [];
 
     this.emitter.emit('sessionChanged', this.session);
 
