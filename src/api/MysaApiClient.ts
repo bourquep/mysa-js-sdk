@@ -19,6 +19,7 @@ import {
   CognitoUserSession
 } from 'amazon-cognito-identity-js';
 import { iot, mqtt } from 'aws-iot-device-sdk-v2';
+import { hash } from 'crypto';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration.js';
 import { customAlphabet } from 'nanoid';
@@ -713,7 +714,9 @@ export class MysaApiClient {
 
     // Per-process stable client id. Random suffix avoids collisions with other running processes.
     if (!this._mqttClientId) {
-      this._mqttClientId = `mysa-js-sdk-${this.session?.username ?? 'anon'}-${process.pid}-${getRandomClientId()}`;
+      const username = this.session?.username ?? 'anon';
+      const usernameHash = hash('sha1', username);
+      this._mqttClientId = `mysa-js-sdk-${usernameHash}-${process.pid}-${getRandomClientId()}`;
     }
 
     const builder = iot.AwsIotMqttConnectionConfigBuilder.new_with_websockets()
