@@ -725,7 +725,7 @@ export class MysaApiClient {
       .with_client_id(this._mqttClientId)
       .with_clean_session(false)
       .with_keep_alive_seconds(30)
-      .with_ping_timeout_ms(3000)
+      .with_ping_timeout_ms(10000)
       .with_protocol_operation_timeout_ms(60000)
       .with_reconnect_min_sec(1)
       .with_reconnect_max_sec(30);
