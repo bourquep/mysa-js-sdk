@@ -15,4 +15,11 @@ export interface MysaApiClientOptions {
    * @defaultValue The global `fetch` function.
    */
   fetcher?: typeof fetch;
+
+  /**
+   * Whether to enable debug logging for AWS CRT.
+   *
+   * @defaultValue `false`
+   */
+  isAwsCrtDebugLoggingEnabled?: boolean;
 }

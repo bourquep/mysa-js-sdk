@@ -18,7 +18,7 @@ import {
   CognitoUserPool,
   CognitoUserSession
 } from 'amazon-cognito-identity-js';
-import { iot, mqtt } from 'aws-iot-device-sdk-v2';
+import { io, iot, mqtt } from 'aws-iot-device-sdk-v2';
 import { hash } from 'crypto';
 import dayjs, { Dayjs } from 'dayjs';
 import duration from 'dayjs/plugin/duration.js';
@@ -151,6 +151,10 @@ export class MysaApiClient {
   constructor(session?: MysaSession, options?: MysaApiClientOptions) {
     this._logger = options?.logger || new VoidLogger();
     this._fetcher = options?.fetcher || fetch;
+
+    if (options?.isAwsCrtDebugLoggingEnabled) {
+      io.enable_logging(io.LogLevel.DEBUG);
+    }
 
     if (session) {
       this._cognitoUser = new CognitoUser({

@@ -20,6 +20,7 @@ const rootLogger = pino({
 /** Main entry point of the example application. */
 async function main() {
   let session: MysaSession | undefined;
+
   try {
     rootLogger.info('Loading session...');
     const sessionJson = await readFile('session.json', 'utf8');
@@ -27,7 +28,11 @@ async function main() {
   } catch {
     rootLogger.info('No valid session file found.');
   }
-  const client = new MysaApiClient(session, { logger: rootLogger.child({ module: 'mysa-js-sdk' }) });
+
+  const client = new MysaApiClient(session, {
+    logger: rootLogger.child({ module: 'mysa-js-sdk' }),
+    isAwsCrtDebugLoggingEnabled: process.env.AWS_CRT_DEBUG_LOGGING === '1'
+  });
 
   client.emitter.on('sessionChanged', async (newSession) => {
     if (newSession) {
