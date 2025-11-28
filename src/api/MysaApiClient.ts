@@ -719,6 +719,10 @@ export class MysaApiClient {
     });
     const credentials = await credentialsProvider();
 
+    if (!credentials.expiration) {
+      throw new Error('MQTT credentials do not have an expiration time.');
+    }
+
     this._mqttCredentialsExpiration = dayjs(credentials.expiration);
 
     this._logger.debug(`MQTT credentials expiration: ${this._mqttCredentialsExpiration.format()}`);

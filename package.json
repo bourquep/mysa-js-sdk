@@ -50,9 +50,9 @@
     "brace-expansion": "^2.0.2"
   },
   "dependencies": {
-    "@aws-sdk/client-iot": "3.920.0",
-    "@aws-sdk/credential-providers": "3.927.0",
-    "amazon-cognito-identity-js": "6.3.15",
+    "@aws-sdk/client-iot": "3.936.0",
+    "@aws-sdk/credential-providers": "3.940.0",
+    "amazon-cognito-identity-js": "6.3.16",
     "aws-iot-device-sdk-v2": "1.23.1",
     "dayjs": "1.11.19",
     "lodash": "4.17.21",
@@ -68,8 +68,8 @@
     "eslint": "9.39.1",
     "eslint-plugin-jsdoc": "61.4.1",
     "eslint-plugin-tsdoc": "0.5.0",
-    "pino": "9.13.0",
-    "pino-pretty": "13.0.0",
+    "pino": "10.1.0",
+    "pino-pretty": "13.1.2",
     "prettier": "3.6.2",
     "prettier-plugin-jsdoc": "1.5.0",
     "prettier-plugin-organize-imports": "4.3.0",
