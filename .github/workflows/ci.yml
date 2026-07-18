@@ -16,7 +16,7 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: 22.x
+  NODE_VERSION: 24.x
 
 jobs:
   lint:
