@@ -75,7 +75,7 @@
     "prettier-plugin-organize-imports": "4.3.0",
     "semantic-release": "25.0.2",
     "tsup": "8.5.1",
-    "tsx": "4.20.6",
+    "tsx": "4.23.1",
     "typedoc": "0.28.15",
     "typedoc-material-theme": "1.4.1",
     "typescript": "5.9.3",
