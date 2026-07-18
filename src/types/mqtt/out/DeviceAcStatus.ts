@@ -4,8 +4,8 @@ import { OutMessageType } from './OutMessageType';
 /**
  * Interface representing a status report from a Mysa AC device.
  *
- * AC-V1-0 devices send this message (type 30) with environmental readings and AC-specific operational parameters.
- * This is the AC equivalent of {@link DeviceV2Status} (type 40) used by baseboard devices.
+ * AC-V1-0 devices send this message (type 30) with environmental readings and AC-specific operational parameters. This
+ * is the AC equivalent of {@link DeviceV2Status} (type 40) used by baseboard devices.
  */
 export interface DeviceAcStatus extends MsgPayload<OutMessageType.DEVICE_AC_STATUS> {
   /** Source information identifying the device sending the status */
